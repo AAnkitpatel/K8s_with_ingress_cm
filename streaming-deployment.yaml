@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streaming
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: streaming
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.kompose.service: streaming
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - args:
+        - node
+        - ./streaming
+        image: IMAGES
+        envFrom:
+        - configMapRef:
+            name: env-production
+        livenessProbe:
+          exec:
+            command:
+            - wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1
+        name: streaming
+        ports:
+        - containerPort: 4000
+        resources: {}
+      restartPolicy: Always
+status: {}
